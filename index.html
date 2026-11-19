@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#100b20">
+<title>HOOKONG</title>
+<style>
+:root{--bg:#100b20;--panel:#1d1533;--gold:#f5c542;--purple:#8b5cf6;--text:#fff}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(160deg,#100b20,#21113b);color:var(--text);font:16px system-ui,sans-serif;min-height:100vh}
+header{padding:24px 18px 14px;text-align:center}h1{margin:0;color:var(--gold);font-size:32px;letter-spacing:3px}header p{margin:6px 0;color:#c9bce5}
+main{max-width:520px;margin:auto;padding:12px 16px 36px}.card{background:var(--panel);border:1px solid #49356e;border-radius:18px;padding:18px;margin:12px 0;box-shadow:0 10px 28px #0005}
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px}.points{font-size:24px;color:var(--gold);font-weight:800}
+button{border:0;border-radius:12px;padding:13px 16px;background:var(--gold);color:#21142e;font-weight:800;font-size:15px;width:100%;margin-top:10px}
+button.secondary{background:#49356e;color:white}button:disabled{opacity:.45}
+.option{background:#30224b;color:white;border:1px solid #59427e;text-align:left}
+.small{color:#c9bce5;font-size:13px}.hidden{display:none}.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px}.tabs button{margin:0}
+h2{margin:0 0 10px;font-size:20px}.question{font-size:18px;font-weight:700;line-height:1.4}
+input{width:100%;padding:13px;border-radius:10px;border:1px solid #59427e;background:#120d20;color:white;font-size:16px}
+footer{text-align:center;color:#a99abf;font-size:12px;padding:12px}
+</style>
+</head>
+<body>
+<header><h1>♛ HOOKONG</h1><p>Predict. Play. Win Points.</p></header>
+<main>
+<section class="card">
+ <div class="row"><div><div class="small">WELCOME</div><strong id="playerName">Player</strong></div><div style="text-align:right"><div class="small">YOUR POINTS</div><div class="points" id="points">0</div></div></div>
+</section>
+<section id="home" class="card">
+ <h2>Game Zone</h2><p class="small">Play free quizzes and collect points. No cash betting or prizes.</p>
+ <div class="tabs"><button onclick="startQuiz()">Cricket Quiz</button><button class="secondary" onclick="showBoard()">Leaderboard</button></div>
+ <button class="secondary" onclick="showProfile()">My Profile</button>
+</section>
+<section id="quiz" class="card hidden">
+ <div class="row"><span class="small" id="progress">Question 1 of 5</span><span class="small">+10 points for correct answer</span></div>
+ <p class="question" id="question"></p><div id="answers"></div>
+ <p class="small" id="feedback" aria-live="polite"></p>
+ <button id="next" class="hidden" onclick="nextQuestion()">Next</button>
+ <button class="secondary" onclick="goHome()">Home</button>
+</section>
+<section id="board" class="card hidden"><h2>Leaderboard</h2><p class="small">Local demo leaderboard on this device.</p><div id="boardContent"></div><button class="secondary" onclick="goHome()">Home</button></section>
+<section id="profile" class="card hidden"><h2>My Profile</h2><label class="small" for="nameInput">Player name</label><input id="nameInput" maxlength="20" placeholder="Enter your name"><button onclick="saveName()">Save Name</button><button class="secondary" onclick="goHome()">Home</button></section>
+<footer>HOOKONG demo v1.0 · Free-to-play educational quiz</footer>
+</main>
+<script>
+const questions=[
+ {q:"How many players are on the fielding side in cricket?",a:["9","10","11","12"],c:2},
+ {q:"What is the name of a score of 100 runs by one batter?",a:["Half-century","Century","Duck","Over"],c:1},
+ {q:"How many legal balls are in a standard over?",a:["4","5","6","8"],c:2},
+ {q:"Which country hosts the Indian Premier League (IPL)?",a:["Australia","India","England","South Africa"],c:1},
+ {q:"What does LBW stand for?",a:["Long Bat Width","Leg Before Wicket","Last Ball Win","Leg By Wide"],c:1}
+];
+let index=0,score=Number(localStorage.hkPoints||0),name=localStorage.hkName||"Player",answered=false;
+const $=id=>document.getElementById(id);
+function refresh(){ $("points").textContent=score;$("playerName").textContent=name; }
+function hide(){["home","quiz","board","profile"].forEach(x=>$(x).classList.add("hidden"))}
+function goHome(){hide();$("home").classList.remove("hidden");refresh()}
+function startQuiz(){index=0;hide();$("quiz").classList.remove("hidden");render()}
+function render(){answered=false;let q=questions[index];$("progress").textContent=`Question ${index+1} of ${questions.length}`;$("question").textContent=q.q;$("feedback").textContent="";$("next").classList.add("hidden");$("answers").innerHTML="";q.a.forEach((a,i)=>{let b=document.createElement("button");b.className="option";b.textContent=a;b.onclick=()=>answer(i);$("answers").appendChild(b)})}
+function answer(i){if(answered)return;answered=true;let q=questions[index];if(i===q.c){score+=10;localStorage.hkPoints=score;$("feedback").textContent="Correct! +10 points 🎉"}else{$("feedback").textContent="Not quite. Correct answer: "+q.a[q.c]}[...$("answers").children].forEach((b,j)=>{b.disabled=true;if(j===q.c)b.style.borderColor="#f5c542"});refresh();$("next").textContent=index===questions.length-1?"Finish Quiz":"Next Question";$("next").classList.remove("hidden")}
+function nextQuestion(){if(index<questions.length-1){index++;render()}else{goHome();alert("Quiz complete! Your points: "+score)}}
+function showBoard(){hide();$("board").classList.remove("hidden");$("boardContent").textContent=name+" — "+score+" points"}
+function showProfile(){hide();$("profile").classList.remove("hidden");$("nameInput").value=name}
+function saveName(){let v=$("nameInput").value.trim();if(v){name=v;localStorage.hkName=name}goHome()}
+refresh();
+</script>
+</body></html>
